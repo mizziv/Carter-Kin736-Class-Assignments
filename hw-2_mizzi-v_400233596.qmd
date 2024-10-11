@@ -1,0 +1,143 @@
+---
+title: "ASSIGNMENT 2"
+name: "Vanessa Mizzi"
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: true
+---
+```{r}
+options(repos = c(CRAN = "http://cran.us.r-project.org"))
+```
+
+```{r}
+install.packages("tidyverse")
+library(tidyverse)
+```
+```{r}
+getwd()
+```
+
+PART A
+
+1. 
+```{r}
+lotr_untidy <- read.csv('/Users/vanessamizzi/Desktop/McMaster University /M.Sc. Kinesiology/KIn 736/assignment 2/lord-of-the-rings-trilogy.csv', header = FALSE)
+
+lotr_untidy
+```
+
+
+
+2. This dataset is not tidy because the genders and the races are grouped together and not given separate columns. Rather than gender being grouped together and race being grouped together, the dataset contains multiple variables in one cell (i.e. hobbit and male or man and female). There is not a single observation per row. The naming of the columns is also inconsistent with a mix of lower case and capital letters.The column names arent in the correct position either. Rather, the column names are replaced with V1, V2, etc. and are instead placed in 2 rows underneath where they should be. 
+
+3. If this dataset was tidy, I would have 4 columns and 18 rows. There would be 18 rows because each movie has 3 races and 2 genders (3 x 2 = 6) x 3 movies = 18 rows. 
+
+4. The columns would be: movie, race, gender, and word count.
+
+PART B
+
+1. 
+
+```{r}
+lotr_tidy <- lotr_untidy[-c(1,2),]
+colnames(lotr_tidy) <- as.character(lotr_tidy[1, ])
+lotr_tidy1 <- lotr_tidy[-1, ] 
+
+lotr_tidy1
+```
+
+```{r}
+lotr_tidy2 <- lotr_tidy1 |> 
+  pivot_longer(
+    cols = -movie,
+    names_to = c("race", "gender"),
+    names_sep = "_",
+    values_to = "word count"
+  ) |> 
+  mutate(
+    race = str_to_title(race),
+    gender = str_to_title(gender))
+
+lotr_tidy2$`word count` = as.numeric(as.character(lotr_tidy2$`word count`))
+
+lotr_tidy2
+
+```
+
+
+2. 
+a)
+
+```{r}
+sum(lotr_tidy2[which(lotr_tidy2$race == 'Hobbit' & lotr_tidy2$gender == 'Male'), 4])
+
+```
+
+8780 words were spoken by male hobbits over the 3 movies.
+
+b) 
+
+```{r}
+sum(lotr_tidy2[which(lotr_tidy2$race == 'Elf' & lotr_tidy2$gender == 'Female'), 4])
+```
+
+1743 words were spoken by female elves over the 3 movies.
+
+c)
+
+```{r}
+sum(lotr_tidy2[which(lotr_tidy2$race == 'Elf' & lotr_tidy2$gender == 'Male'), 4])
+```
+
+1994 words were spoken by male elves over the 3 movies.
+
+3. 
+
+```{r}
+total_word_count <- lotr_tidy2 |> 
+  group_by(movie, race) |> 
+  summarise(total_word_count = sum(`word count`), .groups = 'drop') 
+
+total_count_per_movie <- total_word_count |> 
+  group_by(movie) |> 
+  summarise(total_count_per_movie = sum(total_word_count)) 
+
+merge_tables <- total_word_count |> 
+  left_join(total_count_per_movie, by = "movie", suffix = c("_total_word_count", "_total_count_per_movie"))
+
+proportions <- merge_tables |> 
+  mutate(proportions = total_word_count/total_count_per_movie)
+
+proportions
+
+```
+
+
+In the Fellowship of the Ring, the hobbits had more words spoken, however if we are looking at proportions, the hobbits don't have 50% of the overall words spoken, yet they are close at 46.6%. In The Return of the King, the man race had more words spoken, and they dominated by over 54% percent. In The Two Towers, the man race spoke more words again but the hobbits were a close second. There was no race that dominated, as both the hobbits and the man had around 44% (43.8% and 44.7% respectively). 
+
+4. 
+No, not neccessarily as in the first movie, the hobbits dominated then man in The Return of the King and then both, the hobbits and the man in The Two Towers. The elves never dominated. Considering that 2 races domianted, almost equally in the Two Towers, the dominant race does not depend on the movie. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,187 @@
+---
+title: "Homework assignment 1"
+author: "Vanessa Mizzi"
+format: pdf
+---
+
+1. 
+```{r}
+install.packages("babynames", repos = "http://cran.us.r-project.org")
+library(babynames)
+babynames
+```
+2. This package has 5 variables and 1,924,655 observations.
+
+3. 
+```{r}
+data_dictionary <- data.frame(
+  variable_name = c('year', 'sex', 'name', 'n', 'prop'), 
+  data_type = c('double precision', 'character', 'charcter', 'integer', 'double precision'),
+  variable_description = c('The year of the recorded name', 'The sex of the baby', 'The name of the baby', 'The number of occurrences of the name', 'The proportion of baby names, relative to yearly total births'))
+knitr::kable(data_dictionary, format = "html")
+
+```
+4. 
+```{r}
+year <- dplyr::select(babynames, 1)
+range(year)
+```
+
+The range of years covered in babynames is from 1880 to 2017
+
+5. 
+```{r}
+all_but_n <- dplyr::select(babynames, year, sex, name, prop)
+all_but_n
+```
+
+6. It is more valuable to compare popularity of a name when comparing to the entire population, as prop is the relative percentage, rather than just looking at the absolute number of people named a specific name.
+
+7. 
+
+a) 
+
+```{r}
+second_millennium <- dplyr::filter(all_but_n, year < 2001)
+second_millennium_popular <- dplyr::group_by(second_millennium, name, sex) |> 
+  dplyr::summarise(mean_prop = mean(prop), .groups = 'drop') 
+dplyr::arrange(second_millennium_popular, desc(mean_prop))
+```
+
+John was the most popular male name and Mary was the most popular female name.
+
+b) 
+
+```{r}
+third_millennium <- dplyr::filter(all_but_n, year > 2000)
+third_millennium_popular <- dplyr::group_by(third_millennium, name, sex) |> 
+  dplyr::summarise(mean_prop = mean(prop), .groups = 'drop') 
+dplyr::arrange(third_millennium_popular, desc(mean_prop))
+```
+
+Jacob was the most popular male name and Emma was the most popular female name.
+
+8. 
+
+```{r}
+QVX_years <- dplyr::filter(babynames, year >= 2000 & year <= 2012)
+Q_names <- dplyr::filter(QVX_years, startsWith(name, "Q"))
+popular_Q <- dplyr::group_by(Q_names, name, sex) |> 
+  dplyr::summarise(mean_prop = mean(prop), .groups = 'drop') 
+dplyr::arrange(popular_Q, desc(mean_prop))
+```
+
+The most popular Q names were Quinn for males and females 
+
+```{r}
+V_names <- dplyr::filter(QVX_years, startsWith(name, "V"))
+popular_V <- dplyr::group_by(V_names, name, sex) |> 
+  dplyr::summarise(mean_prop = mean(prop), .groups = 'drop') 
+dplyr::arrange(popular_V, desc(mean_prop))
+```
+
+The most popular V names were Victoria (female) and Victor (male).
+
+```{r}
+X_names <- dplyr::filter(QVX_years, startsWith(name, "X"))
+popular_X <- dplyr::group_by(X_names, name, sex) |> 
+  dplyr::summarise(mean_prop = mean(prop), .groups = 'drop') 
+dplyr::arrange(popular_X, desc(mean_prop))
+```
+
+The most popular X names for males was Xavier and for females, Ximena
+
+9.
+```{r}
+decade_data <- dplyr::mutate(babynames, decade = floor(year/10)*10) |>
+  dplyr::mutate(decade = factor(decade))
+decade_data
+```
+
+
+10. 
+
+Mean:
+
+```{r}
+mean_decade <- dplyr::group_by(decade_data, decade, sex) |> 
+  dplyr::summarise(mean_n = mean(n, na.rm = TRUE), .groups = 'drop')
+mean_decade
+```
+1880: 111 (F), 101 (M)
+1890: 128 (F), 93.6 (M)
+1990: 131 (F), 94.4 (M)
+1910: 187 (F), 181 (M)
+1920: 211 (F), 227 (M)
+1930: 214 (F), 253 (M)
+1940: 262 (F), 368 (M)
+1950: 288 (F), 461 (M)
+1960: 235 (F), 416 (M)
+1970: 147 (F), 266 (M)
+1980: 134 (F), 237 (M)
+1990: 113 (F), 187 (M)
+2000: 96.5 (F), 149 (M)
+2010: 91.7 (F), 134 (M)
+
+Median:
+
+```{r}
+median_decade <- dplyr::group_by(decade_data, decade, sex) |> 
+  dplyr::summarise(median_n = median(n, na.rm = TRUE), .groups = 'drop')
+median_decade
+```
+
+1880: 13 (F), 12 (M)
+1890: 13 (F), 12 (M)
+1990: 12 (F), 12 (M)
+1910: 12 (F), 12 (M)
+1920: 12 (F), 13 (M)
+1930: 12 (F), 13 (M)
+1940: 12 (F), 14 (M)
+1950: 13 (F), 14 (M)
+1960: 12 (F), 13 (M)
+1970: 11 (F), 12 (M)
+1980: 11 (F), 11 (M)
+1990: 11 (F), 11 (M)
+2000: 11 (F), 11 (M)
+2010: 11 (F), 11 (M)
+
+11. 
+
+a) My name: Vanessa 
+
+```{r}
+your_name <- dplyr::filter(decade_data, grepl('Vanessa', name))
+dplyr::arrange(your_name, desc(prop))
+```
+
+My name (Vanessa) was the most common (based on percentage) in 1985 and in the decade of 1980s. 
+
+b) My supervisor's name: Baraa
+
+```{r}
+supervisor_name <- dplyr::filter(decade_data, grepl('Baraa', name))
+dplyr::arrange(supervisor_name, desc(prop))
+```
+My supervisor's name (Baraa) was most popular in 2017 and in the decade of 2010. 
+
+c) Mike's kids' names
+
+
+Kid 1: Jack 
+
+```{r}
+kid_one_name <- dplyr::filter(decade_data, grepl('Jack', name))
+dplyr::arrange(kid_one_name, desc(prop))
+```
+
+Jack's name was most popular (based on percentage) in 1927 and in the decade of the 1920s.
+
+Kid 2: Scott
+
+```{r}
+kid_two_name <- dplyr::filter(decade_data, grepl('Scott', name))
+dplyr::arrange(kid_two_name, desc(prop))
+```
+
+Scotts' name was most popular (based on percentage) in 1971 and in the decade of 1970s.
